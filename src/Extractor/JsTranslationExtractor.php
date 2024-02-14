@@ -28,13 +28,14 @@ class JsTranslationExtractor implements JsTranslationExtractorInterface
     public function extract($content, TranslationCollection $collection)
     {
         $this->addTransMessages($content, $collection);
+        $this->addTransMdMessages($content, $collection);
         $this->addTransChoiceMessages($content, $collection);
 
         return $collection;
     }
 
     /**
-     * Extract `trans(...) or transMd(...)` parts from javascript string.
+     * Extract `trans(...)` parts from javascript string.
      *
      * @param string                $fileContent
      * @param TranslationCollection $collection
@@ -42,7 +43,27 @@ class JsTranslationExtractor implements JsTranslationExtractorInterface
     private function addTransMessages($fileContent, $collection)
     {
         // see https://regex101.com/r/SV1m7G/1/
-        $pattern = '/trans(Md)?\(\s*("(?:[^"\\\\]|\\\\.)*"|\'(?:[^\'\\\\]|\\\\.)*\')((?:,|\))\s*{.*?}((?:\))|,\s*("(?:[^"\\\\]|\\\\.)*"|\'(?:[^\'\\\\]|\\\\.)*\'))|\))/ms';
+        $pattern = '/trans\(\s*("(?:[^"\\\\]|\\\\.)*"|\'(?:[^\'\\\\]|\\\\.)*\')((?:,|\))\s*{.*?}((?:\))|,\s*("(?:[^"\\\\]|\\\\.)*"|\'(?:[^\'\\\\]|\\\\.)*\'))|\))/ms';
+        if (\preg_match_all($pattern, $fileContent, $matches, PREG_OFFSET_CAPTURE)) {
+            foreach ($matches[1] as $i => $keyInfo) {
+                $line = $this->getLineNumber($fileContent, $matches[0][$i][1]);
+                $message = $this->cleanQuotedString($keyInfo[0]);
+                $quotedDomain = empty($matches[4][$i]) ? null : $matches[4][$i][0];
+                $context = $quotedDomain ? ['domain' => $this->cleanQuotedString($quotedDomain)] : [];
+                $collection->addTranslation(new TranslationString($message, $line, $context));
+            }
+        }
+    }
+
+    /**
+     * Extract `transMd(...)` parts from javascript string.
+     *
+     * @param string                $fileContent
+     * @param TranslationCollection $collection
+     */
+    private function addTransMdMessages($fileContent, $collection)
+    {
+        $pattern = '/transMd\(\s*("(?:[^"\\\\]|\\\\.)*"|\'(?:[^\'\\\\]|\\\\.)*\')((?:,|\))\s*{.*?}((?:\))|,\s*("(?:[^"\\\\]|\\\\.)*"|\'(?:[^\'\\\\]|\\\\.)*\'))|\))/ms';
         if (\preg_match_all($pattern, $fileContent, $matches, PREG_OFFSET_CAPTURE)) {
             foreach ($matches[1] as $i => $keyInfo) {
                 $line = $this->getLineNumber($fileContent, $matches[0][$i][1]);
