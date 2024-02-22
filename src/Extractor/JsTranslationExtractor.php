@@ -42,8 +42,8 @@ class JsTranslationExtractor implements JsTranslationExtractorInterface
      */
     private function addTransMessages($fileContent, $collection)
     {
-        // see https://regex101.com/r/SV1m7G/1/
-        $pattern = '/trans\(\s*("(?:[^"\\\\]|\\\\.)*"|\'(?:[^\'\\\\]|\\\\.)*\')((?:,|\))\s*{.*?}((?:\))|,\s*("(?:[^"\\\\]|\\\\.)*"|\'(?:[^\'\\\\]|\\\\.)*\'))|\))/ms';
+        // see https://regex101.com/r/s8CKDD/1
+        $pattern = '/trans\(\s*("(?:[^"\\\\]|\\\\.)*"|\'(?:[^\'\\\\]|\\\\.)*\'|`(?:[^\'\\\\]|\\\\.)*`)((?:,|\))\s*{.*?}((?:\))|,\s*("(?:[^"\\\\]|\\\\.)*"|\'(?:[^\'\\\\]|\\\\.)*\'|`(?:[^\'\\\\]|\\\\.)*`))|\))/ms';
         if (\preg_match_all($pattern, $fileContent, $matches, PREG_OFFSET_CAPTURE)) {
             foreach ($matches[1] as $i => $keyInfo) {
                 $line = $this->getLineNumber($fileContent, $matches[0][$i][1]);
@@ -63,7 +63,8 @@ class JsTranslationExtractor implements JsTranslationExtractorInterface
      */
     private function addTransMdMessages($fileContent, $collection)
     {
-        $pattern = '/transMd\(\s*("(?:[^"\\\\]|\\\\.)*"|\'(?:[^\'\\\\]|\\\\.)*\')((?:,|\))\s*{.*?}((?:\))|,\s*("(?:[^"\\\\]|\\\\.)*"|\'(?:[^\'\\\\]|\\\\.)*\'))|\))/ms';
+        // see https://regex101.com/r/36BZbQ/1
+        $pattern = '/transMd\(\s*("(?:[^"\\\\]|\\\\.)*"|\'(?:[^\'\\\\]|\\\\.)*\'|`(?:[^\'\\\\]|\\\\.)*`)((?:,|\))\s*{.*?}((?:\))|,\s*("(?:[^"\\\\]|\\\\.)*"|\'(?:[^\'\\\\]|\\\\.)*\'|`(?:[^\'\\\\]|\\\\.)*`))|\))/ms';
         if (\preg_match_all($pattern, $fileContent, $matches, PREG_OFFSET_CAPTURE)) {
             foreach ($matches[1] as $i => $keyInfo) {
                 $line = $this->getLineNumber($fileContent, $matches[0][$i][1]);
